@@ -1,0 +1,119 @@
+
+    <style>
+      body {
+        background: #f8f9fa;
+      }
+      .table-container {
+        max-width: 1100px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+        padding: 32px;
+      }
+      .badge {
+        font-size: 1em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="table-container">
+      <h2 class="mb-4 text-center">Job-wise Applicants</h2>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Job Title</th>
+              <th>Application ID</th>
+              <th>Applied Date</th>
+              <th>Status</th>
+              <th>Company</th>
+              <th>Location</th>
+            </tr>
+          </thead>
+          <tbody id="applications-tbody">
+            <!-- Filled by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+
+const companiesUrl = `${baseUrl}/api/companies/user/${userId}`;
+
+async function loadData() {
+  const tbody = document.getElementById("applications-tbody");
+
+  try {
+    const compRes = await fetch(companiesUrl, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: getAuthorization(), // Your function for auth header
+      },
+    });
+
+    if (!compRes.ok) {
+      throw new Error("Failed to fetch company data");
+    }
+
+    const company = await compRes.json();
+    tbody.innerHTML = "";
+
+    if (!company.jobs || company.jobs.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6" class="text-center text-muted">
+            No jobs or applications found for this company.
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    company.jobs.forEach((job) => {
+      const jobApplications = job.applications || [];
+      if (jobApplications.length === 0) return;
+
+      jobApplications.forEach((jobApp, index) => {
+        const tr = document.createElement("tr");
+        if (index === 0) {
+          tr.innerHTML += `
+            <td rowspan="${jobApplications.length}" class="fw-bold">
+              ${job.jobTitle}
+            </td>
+          `;
+        }
+        tr.innerHTML += `
+          <td>${jobApp.applicationId}</td>
+          <td>${jobApp.appliedDate || ""}</td>
+          <td>
+            <span class="badge ${
+              jobApp.status === "Applied"
+                ? "bg-warning text-dark"
+                : jobApp.status === "Selected"
+                ? "bg-success"
+                : "bg-danger"
+            }">${jobApp.status}</span>
+          </td>
+          <td>${company.companyName}</td>
+          <td>${job.jobLocation}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    });
+  } catch (error) {
+    console.error("Error loading data:", error);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center text-danger">Failed to load data</td>
+      </tr>
+    `;
+  }
+}
+
+loadData();
+
+    </script>
+  </body>
+

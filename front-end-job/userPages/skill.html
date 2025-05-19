@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Skill Management</title>
+  <link href="../css/bootstrap.min.css" rel="stylesheet" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <div class="container mt-4">
+    <h2 class="mb-4">Skill Management</h2>
+
+    <div class="mb-4">
+      <label for="selectSkill" class="form-label">Assign Skill to User</label>
+      <select id="selectSkill" class="form-select mb-2">
+        <option value="">-- Select Skill --</option>
+      </select>
+      <button class="btn btn-success" onclick="addSkillToUser()">
+        Assign Skill
+      </button>
+    </div>
+
+    <input
+      type="text"
+      placeholder="Search by Skill Name..."
+      class="form-control mb-3"
+      id="searchInput"
+    />
+
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th style="cursor: pointer">
+            Skill Name <i class="bi bi-arrow-down-up"></i>
+          </th>
+          
+        </tr>
+      </thead>
+      <tbody id="skillTableBody"></tbody>
+    </table>
+  </div>
+
+  <script>
+    
+
+    const userId = getUserId();
+
+    const searchInput = document.getElementById("searchInput");
+    const skillTableBody = document.getElementById("skillTableBody");
+    const selectSkill = document.getElementById("selectSkill");
+
+    let allSkills = [];
+    let userSkills = [];
+    let sortDirection = 1;
+
+    function fetchSkills() {
+      // Fetch all skills
+      fetch(`${baseUrl}/api/skills`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": getAuthorization()
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          allSkills = data;
+          populateSkillDropdown(data);
+        });
+
+      // Fetch user's skills
+      fetch(`${baseUrl}/api/users/${userId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": getAuthorization()
+        }
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          userSkills = data.skills;
+          renderSkills(userSkills);
+        });
+    }
+
+    function populateSkillDropdown(data) {
+      selectSkill.innerHTML = '<option value="">-- Select Skill --</option>';
+      data.forEach((skill) => {
+        selectSkill.innerHTML += `<option value="${skill.skillId}">${skill.skillName}</option>`;
+      });
+    }
+
+    function renderSkills(skills) {
+      skillTableBody.innerHTML = "";
+      skills.forEach((skill) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${skill.skillId}</td>
+          <td>${skill.skillName}</td>
+         
+        `;
+        skillTableBody.appendChild(row);
+      });
+
+      document.querySelectorAll(".delete-btn").forEach((btn) => {
+        btn.addEventListener("click", () => deleteSkill(btn.dataset.id));
+      });
+    }
+
+   
+
+    searchInput.addEventListener("input", () => {
+      const searchTerm = searchInput.value.toLowerCase();
+      const filtered = allSkills.filter((s) =>
+        s.skillName.toLowerCase().includes(searchTerm)
+      );
+      renderSkills(filtered);
+    });
+
+    document
+      .querySelector("th:nth-child(2)")
+      .addEventListener("click", () => {
+        const sorted = [...allSkills].sort(
+          (a, b) => a.skillName.localeCompare(b.skillName) * sortDirection
+        );
+        sortDirection *= -1;
+        renderSkills(sorted);
+      });
+
+    function addSkillToUser() {
+      const skillId = selectSkill.value;
+      if (!skillId) return alert("Please select a skill");
+
+      fetch(`${baseUrl}/api/users/${userId}/addSkill`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": getAuthorization()
+        },
+        body: JSON.stringify({ skillId: Number(skillId) }),
+      })
+        .then((res) => res.text())
+        .then((msg) => {
+          fetchSkills();
+        })
+        .catch((err) => console.error("Error:", err));
+    }
+
+    // Initial load
+    fetchSkills();
+  </script>
+</body>
+</html>

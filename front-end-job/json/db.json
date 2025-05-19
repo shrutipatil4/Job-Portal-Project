@@ -1,0 +1,228 @@
+{
+  "user": [
+    {
+      "userId": 1,
+      "userName": "Sakshi",
+      "email": "sakshi@example.com",
+      "contact": "9999999999",
+      "pass": "1234",
+      "type": "applicant",
+      "address": "Pune",
+      "id": "1c01"
+    },
+    {
+      "userId": 2,
+      "userName": "Rahul",
+      "email": "rahul@example.com",
+      "contact": "8888888888",
+      "pass": "pass",
+      "type": "applicant",
+      "address": "Mumbai",
+      "id": "2d44"
+    },
+    {
+      "userId": 3,
+      "userName": "Anjali",
+      "email": "anjali@example.com",
+      "contact": "7777777777",
+      "pass": "hello",
+      "type": "recruiter",
+      "address": "Delhi",
+      "id": "da51"
+    }
+  ],
+  "company": [
+    {
+      "id": "1",
+      "compName": "TechCorp  pvt limited",
+      "domain": "Information technology",
+      "location": "Pune",
+      "compEmail": "hr@techcorp.com"
+    },
+    {
+      "id": "2",
+      "compName": "MarketWiz",
+      "domain": "Sales & Marketing",
+      "location": "Pune",
+      "compEmail": "jobs@marketwiz.com",
+      "pass": "sales123"
+    },
+    {
+      "id": "3",
+      "compName": "Constructify",
+      "domain": "Construction",
+      "location": "Delhi",
+      "compEmail": "info@constructify.com",
+      "pass": "build123"
+    }
+  ],
+  "job": [
+    {
+      "jobid": 1,
+      "compId": 1,
+      "title": "Software Developer",
+      "salary": "8 LPA",
+      "description": "Develop software",
+      "location": "Pune",
+      "id": "121e"
+    },
+    {
+      "jobid": 2,
+      "compId": 1,
+      "title": "Data Analyst",
+      "salary": "6 LPA",
+      "description": "Analyze data",
+      "location": "Delhi",
+      "id": "6105"
+    },
+    {
+      "jobid": 3,
+      "compId": 2,
+      "title": "Sales Executive",
+      "salary": "4 LPA",
+      "description": "Sales tasks",
+      "location": "Mumbai",
+      "id": "2da8"
+    },
+    {
+      "jobid": 4,
+      "compId": 3,
+      "title": "Site Manager",
+      "salary": "7 LPA",
+      "description": "Manage site",
+      "location": "Delhi",
+      "id": "b3c9"
+    },
+    {
+      "jobid": 5,
+      "compId": 2,
+      "title": "Intern",
+      "salary": "10K/month",
+      "description": "Marketing Intern",
+      "location": "Bangalore",
+      "id": "0d6b"
+    }
+  ],
+  "application": [
+    {
+      "appId": 1,
+      "jobid": 1,
+      "appliedDate": "2024-10-01",
+      "status": "Pending",
+      "userId": 1,
+      "id": "ae83"
+    },
+    {
+      "appId": 2,
+      "jobid": 2,
+      "appliedDate": "2024-10-05",
+      "status": "Approved",
+      "userId": 1,
+      "id": "f9a2"
+    },
+    {
+      "appId": 3,
+      "jobid": 3,
+      "appliedDate": "2024-10-06",
+      "status": "Rejected",
+      "userId": 2,
+      "id": "0cca"
+    },
+    {
+      "appId": 4,
+      "jobid": 4,
+      "appliedDate": "2024-10-08",
+      "status": "Pending",
+      "userId": 2,
+      "id": "b051"
+    },
+    {
+      "appId": 5,
+      "jobid": 5,
+      "appliedDate": "2024-10-10",
+      "status": "Pending",
+      "userId": 1,
+      "id": "f085"
+    }
+  ],
+  "experience": [
+    {
+      "expid": 1,
+      "userId": 1,
+      "fromDate": "2020",
+      "toDate": "2022",
+      "compId": 1,
+      "role": "Intern",
+      "url": "http://exp.com/cert",
+      "id": "42c9"
+    },
+    {
+      "expid": 2,
+      "userId": 2,
+      "fromDate": "2019",
+      "toDate": "2021",
+      "compId": 2,
+      "role": "Sales",
+      "url": "http://exp.com/sales",
+      "id": "3749"
+    }
+  ],
+  "qualification": [
+    {
+      "qid": 1,
+      "userId": 1,
+      "fromDate": "2018",
+      "toDate": "2022",
+      "type": "Bachelor",
+      "url": "http://qual.com",
+      "institute": "DY Patil",
+      "degree": "BE IT",
+      "id": "e351"
+    },
+    {
+      "qid": 2,
+      "userId": 2,
+      "fromDate": "2017",
+      "toDate": "2021",
+      "type": "Bachelor",
+      "url": "http://qual.com/rahul",
+      "institute": "MIT",
+      "degree": "BBA",
+      "id": "2bb9"
+    }
+  ],
+  "skill": [
+    {
+      "skillid": 1,
+      "skillname": "Java",
+      "id": "d7ef"
+    },
+    {
+      "skillid": 2,
+      "skillname": "Python",
+      "id": "3cc3"
+    },
+    {
+      "skillid": 3,
+      "skillname": "Marketing",
+      "id": "12a8"
+    }
+  ],
+  "userSkill": [
+    {
+      "userId": 1,
+      "skillid": 1,
+      "id": "80b2"
+    },
+    {
+      "userId": 1,
+      "skillid": 2,
+      "id": "68d4"
+    },
+    {
+      "userId": 2,
+      "skillid": 3,
+      "id": "0309"
+    }
+  ]
+}

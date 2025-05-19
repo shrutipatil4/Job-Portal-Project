@@ -1,0 +1,87 @@
+body {
+    background: linear-gradient(120deg, #f4f6f9 60%, #e8eaf6 100%);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .profile-banner {
+    background: linear-gradient(90deg, #42a5f5 60%, #7e57c2 100%);
+    height: 140px;
+    border-radius: 18px 18px 0 0;
+    position: relative;
+  }
+  .profile-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(44, 62, 80, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.7rem;
+    color: #42a5f5;
+    position: absolute;
+    left: 50%;
+    top: 90px;
+    transform: translateX(-50%);
+    border: 4px solid #fff;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .profile-card {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 20px rgba(44, 62, 80, 0.1);
+    max-width: 500px;
+    margin: 80px auto 24px auto;
+    padding: 0 0 32px 0;
+    position: relative;
+  }
+  .profile-details {
+    margin-top: 70px;
+    padding: 0 32px;
+  }
+  .profile-details dt {
+    color: #7b8ca3;
+    font-weight: 500;
+    width: 130px;
+  }
+  .profile-details dd {
+    color: #2e3a59;
+    margin-bottom: 16px;
+    margin-left: 0;
+    font-size: 1.05rem;
+  }
+  .profile-company {
+    text-align: center;
+    margin-top: 55px;
+    margin-bottom: 10px;
+  }
+  .profile-company h2 {
+    margin-bottom: 0;
+    font-weight: 700;
+    color: #2e3a59;
+  }
+  .profile-company small {
+    color: #7b8ca3;
+    font-size: 1rem;
+  }
+  .edit-btn-wrapper {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .edit-btn-lg {
+    font-size: 1.25rem;
+    padding: 0.75rem 2.5rem;
+    border-radius: 0.5rem;
+  }
+  @media (max-width: 576px) {
+    .profile-card {
+      padding: 0 0 18px 0;
+    }
+    .profile-details {
+      padding: 0 10px;
+    }
+    .edit-btn-lg {
+      width: 100%;
+    }
+  }

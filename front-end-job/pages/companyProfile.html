@@ -1,0 +1,187 @@
+<body>
+  <div class="profile-card">
+    <div class="profile-banner"></div>
+    <div class="profile-avatar" id="profileAvatar">TC</div>
+    <div class="profile-company">
+      <h2 id="compName">Loading...</h2>
+      <small id="domain"></small>
+    </div>
+    <dl class="row profile-details">
+      <dt class="col-sm-5">Company ID</dt>
+      <dd class="col-sm-7" id="compId"></dd>
+      <dt class="col-sm-5">Location</dt>
+      <dd class="col-sm-7" id="location"></dd>
+      <dt class="col-sm-5">Email</dt>
+      <dd class="col-sm-7" id="compEmail">N/A</dd>
+    </dl>
+  </div>
+  <div class="edit-btn-wrapper">
+    <button class="btn btn-success edit-btn-lg" onclick="showEditModal()">
+      <i class="bi bi-pencil"></i> Edit Profile
+    </button>
+  </div>
+
+  <!-- Edit Modal -->
+  <div
+    class="modal fade"
+    id="editModal"
+    tabindex="-1"
+    aria-labelledby="editModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <form class="modal-content" id="editForm">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editModalLabel">Edit Company Profile</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editCompId" />
+          <div class="mb-3">
+            <label for="editCompName" class="form-label">Company Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="editCompName"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="editDomain" class="form-label">Domain</label>
+            <input type="text" class="form-control" id="editDomain" required />
+          </div>
+          <div class="mb-3">
+            <label for="editLocation" class="form-label">Location</label>
+            <input
+              type="text"
+              class="form-control"
+              id="editLocation"
+              required
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // adjust as needed
+    let company = null;
+    let modal = null;
+    // const userId = getUserId();/
+    const userId = getUserId();
+
+    async function loadCompanyProfile() {
+      try {
+        const userRes = await fetch(`${baseUrl}/api/users/${userId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: getAuthorization(),
+          },
+        });
+        if (!userRes.ok) throw new Error("User fetch failed");
+        const user = await userRes.json();
+        const res = await fetch(`${baseUrl}/api/companies/user/${userId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: getAuthorization(),
+          },
+        });
+        const companies = await res.json();
+        company = companies;
+
+        if (!company) throw new Error("No company found!");
+
+        updateProfileUI(company, user);
+      } catch (e) {
+        document.getElementById("compName").textContent = "Not found";
+        alert("Failed to load company profile.");
+        console.error(e);
+      }
+    }
+
+    function updateProfileUI(data, user) {
+      console.log(data);
+      document.getElementById("compName").textContent = data.companyName;
+      document.getElementById("domain").textContent = data.companyDomain;
+      document.getElementById("compId").textContent = data.companyId;
+      document.getElementById("location").textContent = data.headOffice;
+      document.getElementById("compEmail").textContent = user.userEmail;
+
+      const initials = data.companyName
+        .split(" ")
+        .map((word) => word[0])
+        .join("")
+        .substring(0, 2)
+        .toUpperCase();
+      document.getElementById("profileAvatar").textContent = initials;
+    }
+
+    function showEditModal() {
+      document.getElementById("editCompId").value = company.companyId;
+      document.getElementById("editCompName").value = company.companyName;
+      document.getElementById("editDomain").value = company.companyDomain;
+      document.getElementById("editLocation").value = company.headOffice;
+
+      if (!modal) {
+        modal = new bootstrap.Modal(document.getElementById("editModal"));
+      }
+      modal.show();
+    }
+
+    document
+      .getElementById("editForm")
+      .addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const updatedCompany = {
+          companyName: document.getElementById("editCompName").value,
+          companyDomain: document.getElementById("editDomain").value,
+          headOffice: document.getElementById("editLocation").value,
+        };
+
+        try {
+          const res = await fetch(
+            `${baseUrl}/api/companies/${company.companyId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: getAuthorization(),
+              },
+              body: JSON.stringify(updatedCompany),
+            }
+          );
+
+          if (!res.ok) throw new Error("Update failed");
+
+          company = await res.json();
+          updateProfileUI(company);
+          bootstrap.Modal.getInstance(
+            document.getElementById("editModal")
+          ).hide();
+          alert("Profile updated successfully!");
+        } catch (err) {
+          alert("Update failed!");
+          console.error(err);
+        }
+      });
+
+    loadCompanyProfile();
+  </script>
+</body>

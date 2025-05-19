@@ -1,0 +1,194 @@
+<link rel="stylesheet" href="../css/search-job.css" />
+<!-- Search Field -->
+<div class="search-container">
+  <div class="input-group mb-4 shadow-sm">
+    <input
+      type="text"
+      class="form-control border-primary"
+      placeholder="Search jobs..."
+      aria-label="Search jobs"
+      id="searchInput"
+    />
+    <button class="btn btn-primary" type="button" onclick="filterJobs()">
+      <i class="fas fa-search"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Job Cards -->
+<div class="row row-cols-1 row-cols-md-2 g-4" id="jobCardsContainer">
+  <!-- Cards will be injected here -->
+</div>
+
+<!-- Job Modal -->
+<div class="job-modal" id="jobModal" onclick="closeModal(event)" style="display:none;">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <span class="close-modal" onclick="closeModal(event)">&times;</span>
+    <h3 id="modalJobTitle" class="text-primary mb-4"></h3>
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <p>
+          <strong><i class="fas fa-building me-2 text-muted"></i>Company:</strong>
+          <span id="modalCompany"></span>
+        </p>
+        <p>
+          <strong><i class="fas fa-money-bill-wave me-2 text-muted"></i>Salary:</strong>
+          <span id="modalSalary"></span>
+        </p>
+      </div>
+      <div class="col-md-6">
+        <p>
+          <strong><i class="fas fa-map-marker-alt me-2 text-muted"></i>Location:</strong>
+          <span id="modalLocation"></span>
+        </p>
+        <p>
+          <strong><i class="fas fa-clock me-2 text-muted"></i>Posting Date:</strong>
+          <span id="modalPostingDate"></span>
+        </p>
+      </div>
+    </div>
+    <hr />
+    <h5 class="mb-3">Job Description</h5>
+    <p id="modalJobDescription" class="mb-4"></p>
+    <div class="d-grid">
+     
+      <button class="btn btn-primary btn-lg" onclick="applyToJob(selectedJobId)">Apply Now</button>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let jobsData01 = [];
+let selectedJobId = null;
+const currentUserId = getUserId(); // <-- Set this as per your auth/session
+
+async function loadJobs() {
+  try {
+    const res = await fetch(`${baseUrl}/api/users/userDto/${currentUserId}`, {headers: {"Authorization": getAuthorization()}});
+    const dashboard = await res.json();
+    jobsData01 = dashboard.jobsToApply || [];
+    console.log("Job Data:", jobsData01);
+    
+    // Remove jobs the user has already applied to:
+    const appliedJobIds = await getAppliedJobIdsForUser(currentUserId);
+    jobsData01 = jobsData01.filter(job => !appliedJobIds.includes(job.jobId));
+    renderJobCards(jobsData01);
+  } catch (err) {
+    document.getElementById('jobCardsContainer').innerHTML = `
+      <div class="col-12">
+        <div class="alert alert-danger">Failed to load jobs from backend.</div>
+      </div>
+    `;
+    console.error(err);
+  }
+}
+
+// Get job IDs the user has already applied to
+async function getAppliedJobIdsForUser(userId) {
+  try {
+    const res = await fetch(`${baseUrl}/api/application`,{headers: {"Authorization": getAuthorization()}});
+    const applications = await res.json();
+    return applications
+      .filter(app => app.user && app.user.userId === userId)
+      .map(app => app.job.jobId);
+  } catch {
+    return [];
+  }
+}
+
+function renderJobCards(jobs) {
+  const container = document.getElementById('jobCardsContainer');
+  if (!jobs.length) {
+    container.innerHTML = `<div class="col-12"><p class="text-muted">No jobs available.</p></div>`;
+    return;
+  }
+  
+  container.innerHTML = jobs.map(job => `
+    <div class="col">
+      <div class="card job-card shadow-sm border-light">
+        <div class="card-body">
+          <h5 class="card-title text-primary">${job.jobTitle}</h5>
+          <h6 class="card-subtitle mb-3 text-muted">${job.companyName}</h6>
+          <ul class="list-group list-group-flush mb-3">
+            <li class="list-group-item border-0 ps-0">
+              <i class="fas fa-money-bill-wave me-2 text-muted"></i>
+              ${job.salary ? '₹' + job.salary.toLocaleString() : 'N/A'}
+            </li>
+            <li class="list-group-item border-0 ps-0">
+              <i class="fas fa-map-marker-alt me-2 text-muted"></i>
+              ${job.jobLocation || 'N/A'}
+            </li>
+          </ul>
+          <button class="btn btn-outline-primary w-100" onclick="openJobModal(${job.jobId})">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Modal logic
+function openJobModal(jobId) {
+  const job = jobsData01.find(j => j.jobId === jobId);
+  if (!job) return;
+  selectedJobId = jobId;
+  document.getElementById("modalJobTitle").textContent = job.jobTitle;
+  document.getElementById("modalCompany").textContent = job.companyName;
+  document.getElementById("modalSalary").textContent = job.salary ? '₹' + job.salary.toLocaleString() : '';
+  document.getElementById("modalLocation").textContent = job.jobLocation || '';
+  document.getElementById("modalPostingDate").textContent = job.postingDate || '2025-01-01';
+  document.getElementById("modalJobDescription").textContent = "Collaborate with cross-functional teams including designers, product managers, and QA engineers to deliver high-quality software solutions.";
+
+  // Set up Apply Now button
+  const applyBtn = document.querySelector("#jobModal .btn-primary");
+  applyBtn.onclick = () => applyToJob(selectedJobId);
+
+  document.getElementById("jobModal").style.display = "flex";
+}
+
+function closeModal(event) {
+  if (
+    event.target.classList.contains("job-modal") ||
+    event.target.classList.contains("close-modal")
+  ) {
+    document.getElementById("jobModal").style.display = "none";
+  }
+}
+
+// Apply to Job
+async function applyToJob(jobId) {
+  const job = jobsData01.find(j => j.jobId === jobId);
+  if (!job) return;
+
+  const application = {
+    appliedDate: new Date().toISOString().split('T')[0],
+    status: "Applied",
+    user: { userId: currentUserId },
+    job: { jobId: jobId }
+  };
+
+  try {
+    const res = await fetch(`${baseUrl}/api/application`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": getAuthorization() },
+      body: JSON.stringify(application)
+    });
+    if (!res.ok) throw new Error("Failed to apply for job");
+    jobsData01 = jobsData01.filter(j => j.jobId !== jobId);
+    renderJobCards(jobsData01);
+    closeModal({ target: { classList: { contains: () => true } } }); // Close modal
+    alert("Application submitted successfully!");
+  } catch (err) {
+    alert("Failed to apply for job.");
+    console.error(err);
+  }
+}
+
+
+
+// Initial load
+loadJobs();
+</script>
+

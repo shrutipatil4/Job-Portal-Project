@@ -1,0 +1,203 @@
+<body class="container bg-light">
+  <h3 class="mb-4">Add or Update Experience</h3>
+  <form id="experienceForm" class="row g-3">
+    <div class="col-md-3">
+      <input
+        type="text"
+        id="role"
+        class="form-control"
+        placeholder="Role"
+        required
+      />
+    </div>
+    <div class="col-md-3">
+      <input
+        type="text"
+        id="company"
+        class="form-control"
+        placeholder="Company Name"
+        required
+      />
+    </div>
+    <div class="col-md-3">
+      <input type="date" id="startDate" class="form-control" required />
+    </div>
+    <div class="col-md-3">
+      <input type="date" id="endDate" class="form-control" required />
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-success w-100">Submit</button>
+    </div>
+  </form>
+
+  <hr class="my-5" />
+
+  <div class="py-5">
+    <h2 class="mb-4 text-primary">User Experiences</h2>
+
+    <div class="mb-4">
+      <div class="input-group mb-3">
+        <button
+          class="btn btn-primary rounded-2 m-3"
+          onclick="getExperiences()"
+        >
+          Get Experiences
+        </button>
+        <!-- <button
+          class="btn btn-danger rounded-2 m-3"
+          onclick="deleteAllExperiences()"
+        >
+          Delete All Experiences
+        </button> -->
+      </div>
+    </div>
+
+    <div id="experienceList" class="row gy-4"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    (() => {
+      const userId = getUserId();
+      const baseUrl = "http://localhost:8080";
+
+      async function getExperiences() {
+        const res = await fetch(`${baseUrl}/api/experiences/${userId}`, {
+          headers: { Authorization: getAuthorization() },
+        });
+        const experiences = await res.json();
+
+        const container = document.getElementById("experienceList");
+        container.innerHTML = "";
+
+        experiences.forEach((exp) => {
+          const col = document.createElement("div");
+          col.className = "col-md-6 col-lg-4";
+
+          // Escape values for safety
+          const roleEscaped = exp.role.replace(/'/g, "\\'");
+          const companyEscaped = exp.companyName.replace(/'/g, "\\'");
+          const startEscaped = exp.startDate.replace(/'/g, "\\'");
+          const endEscaped = exp.endDate.replace(/'/g, "\\'");
+
+          col.innerHTML = `
+            <div class="card shadow-sm border-primary">
+              <div class="card-body">
+                <h5 class="card-title text-primary">${exp.role}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">${exp.companyName}</h6>
+                <p class="card-text">
+                  <strong>From:</strong> ${exp.startDate}<br>
+                  <strong>To:</strong> ${exp.endDate}
+                </p>
+                <button class="btn btn-sm btn-warning me-2"
+                  onclick="populateUpdateForm(${exp.experienceId}, ${exp.userId}, '${roleEscaped}', '${companyEscaped}', '${startEscaped}', '${endEscaped}')">
+                  Edit
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteExperience(${exp.experienceId})">Delete</button>
+              </div>
+            </div>
+          `;
+          container.appendChild(col);
+        });
+      }
+
+      async function deleteExperience(id) {
+        if (!confirm("Are you sure you want to delete this experience?"))
+          return;
+        await fetch(`${baseUrl}/api/experiences/delete/experience/${id}`, {
+          method: "DELETE",
+          headers: { Authorization: getAuthorization() },
+        });
+        getExperiences();
+      }
+
+      async function deleteAllExperiences() {
+        if (
+          !confirm(
+            "Are you sure you want to delete all experiences for this user?"
+          )
+        )
+          return;
+        await fetch(`${baseUrl}/api/experiences/delete/${userId}`, {
+          method: "DELETE",
+          headers: { Authorization: getAuthorization() },
+        });
+        getExperiences();
+      }
+
+      async function updateExperience(id, userId, data) {
+        await fetch(`${baseUrl}/api/experiences/${id}/update/${userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: getAuthorization(),
+          },
+          body: JSON.stringify(data),
+        });
+      }
+
+      document
+        .getElementById("experienceForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const data = {
+            user: {
+              userId: userId
+            },
+            role: document.getElementById("role").value.trim(),
+            companyName: document.getElementById("company").value.trim(),
+            startDate: document.getElementById("startDate").value,
+            endDate: document.getElementById("endDate").value,
+          };
+
+
+          if (e.target.dataset.updateId) {
+            await updateExperience(e.target.dataset.updateId, userId, data);
+            delete e.target.dataset.updateId;
+          } else {
+            const res = await fetch(`${baseUrl}/api/experiences`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: getAuthorization(),
+              },
+              body: JSON.stringify(data),
+            });
+
+            if (!res.ok) {
+              const errorText = await res.text();
+              alert(`Failed to add experience: ${res.status} - ${errorText}`);
+              return;
+            }
+          }
+
+          e.target.reset();
+          getExperiences();
+        });
+
+      window.populateUpdateForm = function (
+        id,
+        userId,
+        role,
+        company,
+        startDate,
+        endDate
+      ) {
+        document.getElementById("role").value = role;
+        document.getElementById("company").value = company;
+        document.getElementById("startDate").value = startDate;
+        document.getElementById("endDate").value = endDate;
+        document.getElementById("experienceForm").dataset.updateId = id;
+      };
+
+      window.getExperiences = getExperiences;
+      window.deleteExperience = deleteExperience;
+      window.deleteAllExperiences = deleteAllExperiences;
+
+      // Initial load
+      getExperiences();
+    })();
+  </script>
+</body>

@@ -1,0 +1,24 @@
+{
+  "applications": [
+    {
+      "id": 1,
+      "jobid": 101,
+      "userid": 1,
+      "status": "Pending"
+    }
+  ],
+  "jobs": [
+    {
+      "jobid": 101,
+      "title": "Frontend Developer",
+      "salary": 50000,
+      "compId": 1
+    }
+  ],
+  "companies": [
+    {
+      "compId": 1,
+      "compName": "Tech Corp"
+    }
+  ]
+}

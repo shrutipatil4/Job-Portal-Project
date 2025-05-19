@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My Applications</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body { background: #f4f6f9; }
+    .table thead { background: #027bf5; color: #fff; }
+    .status-badge { font-size: 0.95rem; }
+    .modal-header { background: #027bf5; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h2 class="mb-4">My Applications</h2>
+
+    <!-- Applications Table -->
+    <div class="table-responsive">
+      <table class="table align-middle shadow-sm bg-white">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Applied On</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="applicationsTableBody">
+          <!-- Rows injected by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Job Details Modal -->
+  <div class="modal fade" id="jobDetailsModal" tabindex="-1" aria-labelledby="jobDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="jobDetailsModalLabel">Job Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="jobDetailsContent">
+          <!-- Job details will be injected here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (
+      function(){
+    const userId = getUserId(); // Replace with actual logged-in user id
+        console.log(userId)
+    async function loadApplications() {
+      try {
+        const res = await fetch(`${baseUrl}/api/application/viewDto/${userId}`, {headers: {"Authorization": getAuthorization()}});
+        const applications = await res.json();
+        console.log(applications)
+        renderApplicationsTable(applications);
+      } catch (err) {
+        document.getElementById('applicationsTableBody').innerHTML =
+          `<tr><td colspan="6" class="text-danger">Failed to load applications.</td></tr>`;
+        console.error(err);
+      }
+    }
+
+    function renderApplicationsTable(applications) {
+      const tbody = document.getElementById('applicationsTableBody');
+      if (!applications.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-muted">No applications found.</td></tr>`;
+        return;
+      }
+
+      console.log(applications)
+      tbody.innerHTML = applications.map((app, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${app.companyName || 'N/A'}</td>
+          <td>${app.jobTitle || 'N/A'}</td>
+          <td>
+            <span class="badge status-badge bg-${getStatusColor(app.status)}">${app.status}</span>
+          </td>
+          <td>${app.appliedDate || ''}</td>
+          <td>
+          <button class="btn btn-outline-primary btn-sm view-details-btn" data-jobid="${app.jobId}" data-companyName= "${app.companyName}">
+          View Details
+          </button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.querySelectorAll('.view-details-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+      const jobId = this.getAttribute('data-jobid');
+      const companyName = this.getAttribute('data-companyName')
+      showJobDetails(jobId ,companyName);
+  });
+});
+    }
+
+   
+
+    function getStatusColor(status) {
+      switch ((status || '').toLowerCase()) {
+        case 'offered': return 'success';
+        case 'rejected': return 'danger';
+        case 'shortlisted': return 'primary';
+        case 'pending': return 'warning';
+        default: return 'secondary';
+      }
+    }
+
+    async function showJobDetails(jobId,companyName) {
+      if (!jobId) return;
+      try {
+        const res = await fetch(`${baseUrl}/api/jobs/${jobId}`,{headers: {"Authorization":getAuthorization()}});
+        if (!res.ok) throw new Error("Job not found");
+        const job = await res.json();
+       // console.log(job)
+        document.getElementById('jobDetailsContent').innerHTML = `
+          <h4 class="mb-3 text-primary">${job.jobTitle}</h4>
+          <div class="row mb-2">
+            <div class="col-md-6">
+              <p><strong>Company:</strong> ${companyName || 'N/A'}</p>
+              <p><strong>Location:</strong> ${job.jobLocation || 'N/A'}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Salary:</strong> ₹${job.salary?.toLocaleString() || 'N/A'}</p>
+              <p><strong>Posting Date:</strong> ${job.postingDate || 'N/A'}</p>
+              <p><strong>Deadline:</strong> ${job.deadlineDate || 'N/A'}</p>
+            </div>
+          </div>
+          <hr/>
+          <h5>Description</h5>
+          <p>${job.description || ''}</p>
+        `;
+        new bootstrap.Modal(document.getElementById('jobDetailsModal')).show();
+      } catch (err) {
+        document.getElementById('jobDetailsContent').innerHTML =
+          `<p class="text-danger">Failed to load job details.</p>`;
+        new bootstrap.Modal(document.getElementById('jobDetailsModal')).show();
+        console.error(err);
+      }
+    }
+
+    // Load applications on page load
+    loadApplications();
+      }
+    )();
+  </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!-- Updated HTML + JS to handle COMPANY registration -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body>
+  <div class="container">
+    <div class="d-flex justify-content-center align-items-center min-vh-100">
+      <div class="card p-4" style="width:100%; max-width: 600px;">
+        <div class="form-container">
+          <h2 class="text-center mb-4 form-title">User Registration</h2>
+          <form id="userForm" class="mb-3">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" required />
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" required />
+              </div>
+              <div class="col-md-6">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required />
+              </div>
+              <div class="col-md-6">
+                <label for="phone" class="form-label">Phone</label>
+                <input type="number" class="form-control" id="phone" required />
+              </div>
+              <div class="col-md-6">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control" id="address" required />
+              </div>
+              <div class="col-md-3">
+                <label for="age" class="form-label">Age</label>
+                <input type="number" class="form-control" id="age" required />
+              </div>
+              <div class="col-md-3">
+                <label for="gender" class="form-label">Gender</label>
+                <select class="form-select" id="gender" required>
+                  <option value="">---select---</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="col-md-12">
+                <label for="usertype" class="form-label">User Type</label>
+                <select class="form-select" id="usertype" required>
+                  <option value="">---select---</option>
+                  <option value="user">User</option>
+                  <option value="company">Company</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Company Fields -->
+            <div id="companyFields" class="row g-3 mt-3 d-none">
+              <div class="col-md-12">
+                <label for="companyName" class="form-label">Company Name</label>
+                <input type="text" class="form-control" id="companyName" />
+              </div>
+              <div class="col-md-12">
+                <label for="companyDomain" class="form-label">Company Domain</label>
+                <input type="text" class="form-control" id="companyDomain" />
+              </div>
+              <div class="col-md-12">
+                <label for="headOffice" class="form-label">Head Office</label>
+                <input type="text" class="form-control" id="headOffice" />
+              </div>
+            </div>
+
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-primary" id="submitBtn">Add User</button>
+            </div>
+          </form>
+          <div id="resultBox" class="mt-3 d-none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+ <script src="../js/script.js"></script>
+  <script>
+    (
+      function(){
+    
+
+    const form = document.getElementById("userForm");
+    const userTypeSelect = document.getElementById("usertype");
+    const companyFields = document.getElementById("companyFields");
+
+    userTypeSelect.addEventListener("change", () => {
+      const selectedType = userTypeSelect.value;
+      companyFields.classList.toggle("d-none", selectedType !== "company");
+    });
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const newUser = {
+        userName: document.getElementById("username").value.trim(),
+        userEmail: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        age: Number(document.getElementById("age").value.trim()),
+        gender: document.getElementById("gender").value.trim(),
+        userType: document.getElementById("usertype").value.trim().toUpperCase(),
+      };
+
+      if (newUser.userType === "COMPANY") {
+        newUser.company = {
+          companyName: document.getElementById("companyName").value.trim(),
+          companyDomain: document.getElementById("companyDomain").value.trim(),
+          headOffice: document.getElementById("headOffice").value.trim()
+        };
+      }
+
+      fetch(`${baseUrl}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json",}
+
+         ,
+        body: JSON.stringify(newUser),
+      })
+        .then(async (response) => {
+          if (response.ok) {
+            alert("Registration successful!");
+            form.reset();
+            companyFields.classList.add("d-none");
+          } else {
+            const errorMsg = await response.text();
+            alert("Registration failed: " + errorMsg);
+          }
+        })
+        .catch(() => {
+          alert("Network or server error. Please try again later.");
+        });
+    });
+      }
+    )();
+  </script>
+</body>
+</html>

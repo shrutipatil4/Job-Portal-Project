@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Company Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/companyProfile.css" />
+    <style>
+      /* Make the canvas take full width and height of the card body */
+      .card-body canvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        object-fit: contain;
+      }
+      /* Ensure card body has relative height to contain canvas */
+      .card-body {
+        position: relative;
+        height: 100%;
+        padding: 1rem;
+      }
+      /* Ensure the card itself has fixed height to control chart size */
+      .card {
+        height: 400px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
+      <a class="navbar-brand" id="company-name" href="#">Company</a>
+      <div class="ms-auto dropdown">
+        <a
+          class="nav-link dropdown-toggle text-white"
+          href="#"
+          data-bs-toggle="dropdown"
+        >
+          <i class="fa fa-user"></i> Admin
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li>
+            <a
+              class="dropdown-item"
+              href="#"
+              onclick="loadPage('companyProfile.html')"
+              >Profile</a
+            >
+          </li>
+          <li>
+            <a class="dropdown-item" href="#" onclick="logout()">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="d-flex">
+      <!-- Sidebar -->
+      <div
+        class="bg-dark text-white sidebar p-3"
+        style="width: 250px; min-height: 100vh"
+      >
+        <h5 class="text-white mb-3">Navigation</h5>
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a href="companyDashboard.html" class="nav-link text-white">
+              <i class="fa fa-chart-line me-2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link text-white"
+              onclick="loadPage('postJob.html')"
+            >
+              <i class="fa fa-briefcase me-2"></i> Post Jobs
+            </a>
+          </li>
+          <li class="nav-item">
+            <a
+              href="#"
+              class="nav-link text-white"
+              onclick="loadPage('viewApplication.html')"
+            >
+              <i class="fa fa-file-alt me-2"></i> View Applications
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a
+              href="#"
+              class="nav-link dropdown-toggle text-white"
+              id="navbarReportDropdown"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              <i class="fa fa-file-alt me-2"></i> Report
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarReportDropdown">
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  onclick="loadPage('jobWiseApplications.html')"
+                >
+                  Job Wise Applications
+                </a>
+              </li>
+              <!-- <li>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  onclick="loadPage('top5JobsByDomain.html')"
+                >
+                  Top 5 Jobs by Salary
+                </a>
+              </li> -->
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Main Content -->
+      <div
+        class="p-4"
+        style="flex: 1; height: 100%; display: flex; flex-direction: column"
+        id="main-content"
+      >
+        <!-- Top Row: 3 Cards -->
+        <div style="display: flex; justify-content: space-between; height: 25%">
+          <div
+            class="card"
+            style="width: 33.33%; height: 150px; margin-right: 1%"
+          >
+            <div class="card-body">
+              <h5 class="card-title">Number of Appilications</h5>
+              <p class="card-text" id="applications-count">Loading...</p>
+            </div>
+          </div>
+          <div
+            class="card"
+            style="width: 33.33%; height: 150px; margin-right: 1%"
+          >
+            <div class="card-body">
+              <h5 class="card-title">Number of Jobs Posted</h5>
+              <p class="card-text" id="jobs-count">Loading...</p>
+            </div>
+          </div>
+          <div class="card" style="width: 33.33%; height: 150px">
+            <div class="card-body">
+              <h5 class="card-title">Number of Male and Female</h5>
+              <p class="card-text" id="gender-count">Loading...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Row: 2 Cards for Charts -->
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+            height: 75%;
+          "
+        >
+          <!-- Chart 1: Applications per Job -->
+          <div class="card" style="width: 49%; height: 400px; margin-right: 1%">
+            <div class="card-body">
+              <h5 class="card-title">Applications per Job</h5>
+              <canvas id="applicationsJobChart" height="300"></canvas>
+            </div>
+          </div>
+          <!-- Chart 2: Skill vs Applicants -->
+          <div class="card" style="width: 49%; height: 400px">
+            <div class="card-body">
+              <h5 class="card-title">Skill vs Applicants</h5>
+              <canvas id="skillApplicantsChart" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3 footer">
+      &copy; 2025 User Dashboard. All rights reserved.
+    </footer>
+    <script src="../js/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Bootstrap JS Bundle with Popper (includes dropdown functionality) -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-..."
+      crossorigin="anonymous"
+    ></script>
+
+    <script>
+
+      const userId = getUserId();
+
+      let companyId = null;
+
+      async function loadCompanyProfile() {
+        try {
+          const userRes = await fetch(`${baseUrl}/api/users/${userId}`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: getAuthorization(),
+            },
+          });
+
+          if (!userRes.ok) throw new Error("User fetch failed");
+
+          const user = await userRes.json();
+
+          const res = await fetch(`${baseUrl}/api/companies/user/${userId}`, {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: getAuthorization(),
+            },
+          });
+
+          const company = await res.json();
+
+          if (!company || !company.companyId) {
+            throw new Error("No valid company found!");
+          }
+
+          companyId = company.companyId;
+          document.getElementById("company-name").textContent =
+            company.companyName;
+
+          console.log("Company ID:", companyId);
+
+          loadDashboardData();
+        } catch (e) {
+          console.error("Error:", e);
+
+          document.getElementById("applications-count").textContent =
+            "Not found";
+        }
+      }
+
+
+      function loadDashboardData() {
+        fetch(`${baseUrl}/api/companies/${companyId}/companyDashBoard`, {
+          headers: { Authorization: getAuthorization() },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            document.getElementById("applications-count").textContent =
+              data.totalApplications;
+            document.getElementById("jobs-count").textContent = data.totalJobs;
+            document.getElementById(
+              "gender-count"
+            ).textContent = `Male: ${data.maleCount}, Female: ${data.femaleCount}`;
+
+            // Chart 1
+            const ctx1 = document
+              .getElementById("applicationsJobChart")
+              .getContext("2d");
+            new Chart(ctx1, {
+              type: "bar",
+              data: {
+                labels: data.labels,
+                datasets: [
+                  {
+                    label: "Applications",
+                    data: data.applicationsPerJob,
+                    backgroundColor: "rgba(54, 162, 235, 0.7)",
+                    borderColor: "rgba(54, 162, 235, 1)",
+                    borderWidth: 1,
+                  },
+                ],
+              },
+              options: {
+                scales: { y: { beginAtZero: true } },
+              },
+            });
+
+            // Chart 2
+            const ctx2 = document
+              .getElementById("skillApplicantsChart")
+              .getContext("2d");
+            new Chart(ctx2, {
+              type: "bar",
+              data: {
+                labels: data.labels,
+                datasets: [
+                  {
+                    label: "Applicants",
+                    data: data.applicationsPerJob,
+                    backgroundColor: "rgba(255, 99, 132, 0.7)",
+                    borderColor: "rgba(255, 99, 132, 1)",
+                    borderWidth: 1,
+                  },
+                ],
+              },
+              options: {
+                scales: { y: { beginAtZero: true } },
+              },
+            });
+          })
+          .catch((err) => {
+            console.error("Dashboard error:", err);
+            document.getElementById("applications-count").textContent = "Error";
+            document.getElementById("jobs-count").textContent = "Error";
+            document.getElementById("gender-count").textContent = "Error";
+          });
+      }
+
+      // Start everything
+      loadCompanyProfile();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<head>
+ 
+  <style>
+    h2 { margin-top: 40px; }
+    .chart-container { width: 700px; margin: 40px auto; background: #fff; padding: 30px 40px 40px 40px; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.08);}
+    canvas { margin: 0 auto; display: block; }
+  </style>
+</head>
+<body>
+  <div class="chart-container">
+    <h2>Applications by Location</h2>
+    <canvas id="locationChart" height="120"></canvas>
+  </div>
+  <!-- <div class="chart-container">
+    <h2>Jobs by Industry</h2>
+    <canvas id="industryChart" height="120"></canvas>
+  </div> -->
+  <div class="chart-container">
+    <h2>Applications by Job Role</h2>
+    <canvas id="roleChart" height="120"></canvas>
+  </div>
+
+  <script>
+    
+async function renderCharts() {
+  const userId = getUserId(); // This uses your decodeJWT helper
+
+  // Helper to fetch with token
+  async function fetchChartData(url) {
+    const options = { headers: { "Authorization": getAuthorization() } } ;
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error('HTTP error ' + res.status);
+    return res.json();
+  }
+
+  try {
+    const [
+      locationData,
+      industryData,
+      roleData
+    ] = await Promise.all([
+      fetchChartData(`${baseUrl}/charts/applications-by-location/${userId}`, { headers: { "Authorization": getAuthorization() } }),
+      fetchChartData(`${baseUrl}/charts/jobs-by-company-domain/${userId}`, { headers: { "Authorization": getAuthorization() } }),
+      fetchChartData(`${baseUrl}/charts/applications-by-job-title/${userId}`, { headers: { "Authorization": getAuthorization() } })
+    ]);
+
+        // Prepare data for charts
+        const locationLabels = locationData.map(item => item.label);
+        const locationCounts = locationData.map(item => item.count);
+
+        const industryLabels = industryData.map(item => item.label);
+        const industryCounts = industryData.map(item => item.count);
+
+        const roleLabels = roleData.map(item => item.label);
+        const roleCounts = roleData.map(item => item.count);
+
+        // Color palette
+        const palette = [
+          "#42a5f5", "#66bb6a", "#ffa726", "#ab47bc", "#d32f2f",
+          "#29b6f6", "#ef5350", "#8d6e63", "#00bcd4", "#ffb300",
+          "#7e57c2", "#43a047", "#e53935", "#5c6bc0", "#bdbdbd",
+        ];
+
+        // Chart 1: Applications by Location (Bar)
+        new Chart(document.getElementById("locationChart"), {
+          type: "bar",
+          data: {
+            labels: locationLabels,
+            datasets: [{
+              label: "Applications",
+              data: locationCounts,
+              backgroundColor: palette.slice(0, locationLabels.length),
+              borderRadius: 6,
+            }],
+          },
+          options: {
+            responsive: true,
+            animation: { duration: 1200 },
+            scales: {
+              y: { beginAtZero: true, ticks: { color: "#444", stepSize: 1 } },
+              x: { ticks: { color: "#444" } },
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (context) => ` ${context.parsed.y} Applications`,
+                },
+              },
+            },
+          },
+        });
+
+        // // Chart 2: Jobs by Industry (Doughnut)
+        // console.log("Industry Counts : " , industryCounts);
+        
+        // new Chart(document.getElementById("industryChart"), {
+        //   type: "doughnut",
+        //   data: {
+        //     labels: industryLabels,
+        //     datasets: [{
+        //       label: "Jobs",
+        //       data: industryCounts,
+        //       backgroundColor: palette.slice(0, industryLabels.length),
+        //       borderWidth: 2,
+        //       hoverOffset: 10,
+        //     }],
+        //   },
+        //   options: {
+        //     responsive: true,
+        //     animation: { animateRotate: true, duration: 1400 },
+        //     plugins: {
+        //       legend: {
+        //         position: "bottom",
+        //         labels: { color: "#444", font: { weight: "bold" } },
+        //       },
+        //       tooltip: {
+        //         callbacks: {
+        //           label: (context) => ` ${context.label}: ${context.parsed} Jobs`,
+        //         },
+        //       },
+        //     },
+        //   },
+        // });
+
+        // Chart 3: Applications by Job Role (Bar)
+        new Chart(document.getElementById("roleChart"), {
+          type: "bar",
+          data: {
+            labels: roleLabels,
+            datasets: [{
+              label: "Applications",
+              data: roleCounts,
+              backgroundColor: palette.slice(0, roleLabels.length),
+              borderRadius: 6,
+            }],
+          },
+          options: {
+            responsive: true,
+            animation: { duration: 1200 },
+            scales: {
+              y: { beginAtZero: true, ticks: { color: "#444", stepSize: 1 } },
+              x: { ticks: { color: "#444" } },
+            },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (context) => ` ${context.parsed.y} Applications`,
+                },
+              },
+            },
+          },
+        });
+      } catch (err) {
+    alert("Failed to load analytics data. " + err.message);
+    console.error(err);
+  }
+}
+
+renderCharts();
+  </script>
+  
+</body>
+

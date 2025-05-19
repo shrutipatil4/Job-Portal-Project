@@ -1,0 +1,183 @@
+
+:root {
+  --primary-color: #027bf5;
+  --secondary-color: #f8f9fa;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  overflow-x: hidden;
+}
+
+.sidebar-hidden {
+  display: none !important;
+}
+
+/* Navbar styling */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0.8rem 1.5rem;
+    min-height: 60px;
+    background-color: #027bf5 !important; /* Ensure color consistency */
+  }
+  
+  .navbar h3 {
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 0;
+    color: white;
+  }
+  
+  /* Sidebar toggle button */
+  #sidebarToggle {
+    padding: 0.375rem 0.75rem;
+    border-color: rgba(255, 255, 255, 0.5);
+    transition: all 0.3s ease;
+  }
+  
+  #sidebarToggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: white;
+  }
+  
+  /* Dropdown styling */
+  .dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .dropdown-menu {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    margin-top: 0.5rem;
+  }
+  
+  .dropdown-item {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #027bf5;
+  }
+  
+  /* User icon */
+  .fa-user {
+    font-size: 1.1rem;
+  }
+  
+/* Sidebar styling */
+.sidebar {
+  transition: all 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.sidebar .nav-link {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 0.25rem;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+}
+
+/* Main content area */
+#main-content {
+  transition: all 0.3s ease;
+  background-color: var(--secondary-color);
+  min-height: calc(100vh - 56px);
+}
+
+/* Welcome card */
+.welcome-card {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #0259c8 100%);
+  border-radius: 10px;
+  color: white;
+}
+
+/* Stats cards */
+.stats-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: 8px;
+}
+
+.stats-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stats-card h6 {
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.stats-card h3 {
+  font-weight: 600;
+}
+
+/* Job cards */
+.job-card {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.job-card .card-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.job-card .text-muted {
+  font-size: 0.85rem;
+}
+
+/* Footer */
+footer {
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .sidebar {
+    position: fixed;
+    left: -250px;
+    top: 56px;
+    bottom: 0;
+    z-index: 1000;
+  }
+  
+  .sidebar.show {
+    left: 0;
+  }
+  
+  #main-content {
+    margin-left: 0 !important;
+  }
+  
+  .job-card {
+    min-height: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-card {
+    margin-bottom: 1rem;
+  }
+}

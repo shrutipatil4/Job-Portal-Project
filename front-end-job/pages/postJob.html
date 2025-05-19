@@ -1,0 +1,227 @@
+<body>
+  <div class="container py-5">
+    <div class="mx-auto form-container" style="max-width: 600px">
+      <h2>Post a Job</h2>
+      <form id="jobForm">
+        <div class="mb-3">
+          <label for="jobRole" class="form-label">Job Role</label>
+          <select class="form-select" id="jobRole" name="jobRole" required>
+            <option value="">Select Role</option>
+            <option value="Software Engineer">Software Engineer</option>
+            <option value="Frontend Developer">Frontend Developer</option>
+            <option value="Backend Developer">Backend Developer</option>
+            <option value="Full Stack Developer">Full Stack Developer</option>
+            <option value="Data Analyst">Data Analyst</option>
+            <option value="QA Engineer">QA Engineer</option>
+            <option value="Project Manager">Project Manager</option>
+            <option value="UI/UX Designer">UI/UX Designer</option>
+            <option value="DevOps Engineer">DevOps Engineer</option>
+            <!-- Add more as needed -->
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="salary" class="form-label">Salary</label>
+          <input type="number" class="form-control" id="salary" name="salary" min="1" required />
+        </div>
+        <div class="mb-3">
+          <label for="jd" class="form-label">Job Description (JD)</label>
+          <textarea class="form-control" id="jd" name="jd" rows="4" minlength="10" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="location" class="form-label">Location</label>
+          <select class="form-select" id="location" name="location" required>
+            <option value="">Select Location</option>
+            <option value="Bangalore">Bangalore</option>
+            <option value="Mumbai">Mumbai</option>
+            <option value="Delhi">Delhi</option>
+            <option value="Chennai">Chennai</option>
+            <option value="Pune">Pune</option>
+            <option value="Hyderabad">Hyderabad</option>
+            <option value="Kolkata">Kolkata</option>
+            <option value="Ahmedabad">Ahmedabad</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="deadlineDate" class="form-label">Deadline Date</label>
+          <input type="date" class="form-control" id="deadlineDate" name="deadlineDate" required />
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">Post Job</button>
+        </div>
+       
+      </form>
+       <br>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Job Title</th>
+            <th>Salary</th>
+            <th>Job Description</th>
+            <th>Location</th>
+            <th>Posting Date</th>
+            <th>Deadline Date</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Dynamic content will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    
+    const userId01 = getUserId();
+
+    let companyId01 = null;
+      const jobsTableBody = document.querySelector("table tbody");
+      const form = document.getElementById("jobForm");
+      const deadlineDateInput = document.getElementById("deadlineDate");
+
+      // Set minimum date for deadline to tomorrow
+      const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0];
+      deadlineDateInput.setAttribute("min", tomorrow);
+
+      function formatDate(dateStr) {
+        if (!dateStr) return "";
+        return dateStr.length > 10 ? dateStr.slice(0, 10) : dateStr;
+      }
+
+      function loadJobs() {
+        if (!companyId01) return;
+        fetch(`${baseUrl}/api/jobs/company/${companyId01}`, {
+          headers: { "Authorization": getAuthorization() }
+        })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+          })
+          .then((jobs) => {
+            if (!Array.isArray(jobs)) {
+              throw new Error("API did not return an array.");
+            }
+
+            jobsTableBody.innerHTML = "";
+            jobs.forEach((job, idx) => {
+              const tr = document.createElement("tr");
+              tr.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${job.jobTitle || ""}</td>
+                <td>${job.salary || ""}</td>
+                <td>${job.description || ""}</td>
+                <td>${job.jobLocation || ""}</td>
+                <td>${formatDate(job.postingDate)}</td>
+                <td>${formatDate(job.deadlineDate)}</td>
+                <td class="text-center">
+              
+                  <button class="btn btn-sm btn-danger btn-delete" data-id="${
+                    job.jobId
+                  }">Delete</button>
+                </td>
+              `;
+              jobsTableBody.appendChild(tr);
+            });
+
+            if (jobs.length === 0) {
+              jobsTableBody.innerHTML =
+                '<tr><td colspan="9" class="text-center text-muted">No jobs found for this company.</td></tr>';
+            }
+          })
+          .catch((err) => {
+            console.error("Fetch error:", err);
+            jobsTableBody.innerHTML = `<tr><td colspan="9" class="text-danger text-center">Error fetching jobs: ${err.message}</td></tr>`;
+          });
+      }
+
+      console.log();
+      
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        console.log("I am inside Submit");
+        
+        if (!companyId01) {
+          alert("Company not loaded yet. Please try again.");
+          return;
+        }
+
+        const postingDate = new Date().toISOString().split("T")[0];
+
+        const data = {
+          company: { companyId: companyId01 }, // Important: send as nested object for your Job entity
+          jobTitle: form.jobRole.value,
+          salary: parseFloat(form.salary.value),
+          description: form.jd.value,
+          jobLocation: form.location.value,
+          postingDate: postingDate,
+          deadlineDate: deadlineDateInput.value,
+        };
+
+        fetch(`${baseUrl}/api/jobs`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": getAuthorization()
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              alert("Failed to post job. Please check your input.");
+              return;
+            }
+            alert("Job posted successfully!");
+            form.reset();
+            deadlineDateInput.setAttribute("min", tomorrow);
+            loadJobs();
+          })
+          .catch((err) => {
+            alert("Error posting job.");
+            console.error(err);
+          });
+      });
+
+      jobsTableBody.addEventListener("click", function (e) {
+        if (e.target.classList.contains("btn-delete")) {
+          const id = e.target.getAttribute("data-id");
+          if (confirm("Delete this job?")) {
+            fetch(`${baseUrl}/api/jobs/${id}`, {
+              method: "DELETE",
+              headers: { "Authorization": getAuthorization()}
+            }).then(() => loadJobs());
+          }
+        }
+        // Edit functionality can be implemented here
+      });
+
+      // --- Fetch company for logged-in user and then load jobs ---
+      fetch(`${baseUrl}/api/companies/user/${userId01}`, {
+        headers: { "Authorization": getAuthorization() }
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to load company for user.");
+          return res.json();
+        })
+        .then(company => {
+          if (!company || !company.companyId) {
+            alert("No company found for this user.");
+            return;
+          }
+          companyId01 = company.companyId;
+          loadJobs();
+        })
+        .catch(err => {
+          alert("Could not load company for user. Please contact support.");
+          console.error(err);
+        });
+  
+  </script>
+</body>
+</html>
